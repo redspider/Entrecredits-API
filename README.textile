@@ -1,0 +1,33 @@
+h2. Entrecredits API
+
+This project provides a PHP wrapper to the Entrecredits OAuth API. The API allows you (the Consumer) to perform a number of operations, including credit transfers, on behalf of an Entrecredits user in a secure fashion.
+
+It is recommended that developers intending to use the API have a passing familiarity with OAuth ( http://oauth.net/ ), although it is not necessary in order to use the wrapper.
+
+h3. Definitions
+
+The API generally follows the OAuth terminology, the following terms will be useful in understanding this document:
+
+*   Service Provider
+
+    In this case, the Service Provider is Entrecredits.
+    
+*   Consumer
+
+    The Consumer is the web service accessing the Service Provider on behalf of the User. In this case, the Consumer is probably you.
+    
+*   User
+
+    The User is the account on whose behalf the Consumer is operating.
+
+h3. Installation
+
+Simply include EccOAuth.php and OAuth.php in your project. You may optionally want to include the examples such as cointoss.php for reference.
+
+h3. Quick start
+
+Coming soon.
+
+h4. Questions
+
+If you have any questions regarding the API at the moment, please contact Richard Clark <richard@redspider.co.nz>
