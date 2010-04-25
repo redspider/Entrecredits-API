@@ -1,4 +1,7 @@
 <?php
+/* OAuth.php retrieved from http://oauth.googlecode.com/svn/code/php/ 22nd Apr, 2010 */
+
+
 // vim: foldmethod=marker
 
 /* Generic exception class
