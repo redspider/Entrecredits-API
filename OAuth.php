@@ -363,6 +363,7 @@ class OAuthRequest {
       $this->get_normalized_signature_http_url(),
       $this->get_signable_parameters()
     );
+    
 
     $parts = OAuthUtil::urlencode_rfc3986($parts);
 

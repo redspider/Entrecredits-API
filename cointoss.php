@@ -30,6 +30,9 @@ $ECC_ACCESS = "basic";
   local apache/php instance then it's likely to be http://localhost/something
 */
 $APP_CALLBACK_URL = "http://localhost/ecc-php/cointoss.php";
+/* This is an account ID the application can access directly (the owner). This is
+  used when receiving/sending credits etc */
+$APP_ACCOUNT_ID = 1;
 
 /* Don't change this */
 $API_BASE = "http://localhost:5001/api";
@@ -82,12 +85,28 @@ if (!isset($_SESSION['access_token'])) {
 
 /* If we reach this point, we have an access token. Yay! we can get information */
 
+/* Get app api as well */
+$app_api = new OAuthClient(new EccServiceProvider(), $consumer);
+$app_token = $app_api->selfAuthorize($APP_ACCOUNT_ID);
+$app_api = new OAuthClient(new EccServiceProvider(), $consumer, $app_token);
+
 /* Construct api object*/
-$api = new OAuthClient(new EccServiceProvider(), $consumer, unserialize($_SESSION['access_token']));
+$user_api = new OAuthClient(new EccServiceProvider(), $consumer, unserialize($_SESSION['access_token']));
 
 /* Obtain the users balance */
+$account = json_decode($user_api->call($API_BASE."/account/summary", array()));
 
-$result = $api->call($API_BASE."/balance/get_default_balance", array());
-print_r($result);
+/* Obtain the applications balance */
+$app_account = json_decode($app_api->call($API_BASE."/account/summary", array()));
+
 
 ?>
+Accessing <?=$account->account?> <?=$account->name?>, with a default balance of <?=$account->default_balance?>ec.
+<br />
+This app is owned by <?=$app_account->name?>, with a balance of <?=$app_account->default_balance?>ec.
+<br />
+Now sending 50 credits to ourselves
+<?
+$new_balance = json_decode($app_api->call($API_BASE."/account/send_credits", array("from_balance"=>1, "to_account"=>$account->account, "amount"=>50, "note"=>"Test test wheee", "days"=>14)));
+?>
+with resulting balance of <?=$new_balance->balance?>

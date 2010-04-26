@@ -22,21 +22,25 @@ class OAuthClientException extends Exception {}
 class OAuthServiceProvider {
 	private $request_token_uri;
 	private $authorization_uri;
+	private $self_authorize_uri;
 	private $access_token_uri;
 	
 	/**
 	 * @param string $rt URI of the 'request token' endpoint
 	 * @param string $a  URI of the 'authorize request token' endpoint
+	 * @param string $sa  URI of the 'self-authorize request token' endpoint
 	 * @param string $at URI of the 'access token' endpoint
 	 */
-	public function __construct($rt, $a, $at) {
+	public function __construct($rt, $a, $sa, $at) {
 		$this->request_token_uri = $rt;
 		$this->authorization_uri = $a;
+		$this->self_authorize_uri = $sa;
 		$this->access_token_uri  = $at;
 	}
 	
 	public function request_token_uri() { return $this->request_token_uri; }
 	public function authorization_uri() { return $this->authorization_uri; }
+	public function self_authorize_uri() { return $this->self_authorize_uri; }
 	public function access_token_uri()  { return $this->access_token_uri; }
 }
 
@@ -48,6 +52,7 @@ class EccServiceProvider extends OAuthServiceProvider {
         parent::__construct(
             "http://localhost:5001/api/oauth/request_token",
             "http://localhost:5001/api/oauth/authorize",
+            "http://localhost:5001/api/oauth/self_authorize",
             "http://localhost:5001/api/oauth/access_token"
         );
     }
@@ -131,6 +136,26 @@ class OAuthClient {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Self-authorize for a given account
+	 * @param int $account
+	 * @return OAuthToken
+	 */
+	public function selfAuthorize($account) {
+		$request_token = $this->getRequestToken('full','oob');
+		$req = OAuthRequest::from_consumer_and_token(
+			$this->oauth_consumer,
+			$request_token,
+			'GET',
+			$this->service_provider->self_authorize_uri()
+		);
+		$req->set_parameter('account', $account);
+		$req->set_parameter('request_token', $request_token->key);
+		$v_result = $this->_performRequest($req, $request_token);
+		parse_str($v_result,$verifier_result);
+		return $this->getAccessToken($request_token, $verifier_result['oauth_verifier']);
 	}
 
 	/**
