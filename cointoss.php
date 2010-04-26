@@ -13,7 +13,7 @@
 session_start();
 
 /* Remove this line if you're talking to the public entrecredits.com site */
-define(ECC_OAUTH_URL_OVERRIDE, "https://entrecredits.com");
+define('ECC_OAUTH_URL_OVERRIDE', "https://entrecredits.com");
 define('ECC_API_BASE','http://localhost:5001/api');
 
 require_once('OAuth.php');
