@@ -20,8 +20,8 @@ require_once('OAuth.php');
 require_once('EccOAuth.php');
 
 /* Obtain these details from your app details page */
-$ECC_CONSUMER_KEY = "b5ff1a3af334043f78ade0fbbd5fb438";
-$ECC_CONSUMER_SECRET = "f1af929bf465c8d90961ba61e28f57d8";
+$ECC_CONSUMER_KEY = "c00e1d4c3049dbe84baef062fa948334";
+$ECC_CONSUMER_SECRET = "aa612a81abf44e5037378c0107648dfc";
 
 /* Which level of access your app requires. Unless you're providing tools to
   help the user manage their own account, this should almost always be 'basic' */
@@ -33,10 +33,7 @@ $ECC_ACCESS = "basic";
 $APP_CALLBACK_URL = "http://localhost/ecc-php/cointoss.php";
 /* This is an account ID the application can access directly (the owner). This is
   used when receiving/sending credits etc */
-$APP_ACCOUNT_ID = 1;
-
-/* Don't change this */
-$API_BASE = "http://localhost:5001/api";
+$APP_ACCOUNT_ID = 2;
 
 $consumer = new OAuthConsumer($ECC_CONSUMER_KEY, $ECC_CONSUMER_SECRET, $APP_CALLBACK_URL);
 
@@ -107,18 +104,18 @@ This app is owned by <?=$app_account->name?>, with a balance of <?=$app_account-
 <br />
 Now offering 50 credits to ourselves
 <?
-$new_balance = $app_api->offer(1, $account->account, 50, "Test test wheee", 14);
+$new_balance = $app_api->offer($app_account->default_balance_id, $account->account, 50, "Test test wheee", 14);
 ?>
 with resulting balance of <?=$new_balance?>
 <br />
 Now moving 5 credits from them to us
 <?
-$prepare_id = $app_api->prepare(1, $app_account->account, 5, "Test test prepare");
+$prepare_id = $app_api->prepare($app_account->default_balance_id, $account->account, 5, "Test test prepare");
 ?>
 prepare id is <?=$prepare_id?><br />
 committing<br />
 <?
-$app_api->commit(1, $prepare_id);
+$app_api->commit($account->default_balance_id, $prepare_id);
 $account = $user_api->summary();
 ?>
 Final balance is <?=$account->default_balance?>
