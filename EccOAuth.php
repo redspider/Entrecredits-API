@@ -15,6 +15,10 @@
  */
 class OAuthClientException extends Exception {}
  
+if (!defined('ECC_API_BASE')) {
+	define('ECC_API_BASE','https://entrecredits.com/api');
+}
+
 /**
  * A class to identify different service providers
  * @author Morten Fangel <fangel@sevengoslings.net>
@@ -228,5 +232,66 @@ class OAuthClient {
 		}
 	}
 }
- 
+
+class EccClient extends OAuthClient {
+	/**
+	 * Gets a summary of the current account
+	 * @return array
+	 */
+	public function summary() {
+		return json_decode($this->call(ECC_API_BASE."/account/summary", array()));
+	}
+	
+	/**
+	 * Send a credit offer
+	 * @param int $from_balance Balance credits should be deducted from
+	 * @param int $to_account Account credits are being offered to
+	 * @param int $amount Amount of credits to offer
+	 * @param string $note Short text note to include with offer
+	 * @param int days $days Number of days until offer expires and credits are returned
+	 * @return int Updated balance for this account
+	 */
+	public function offer($from_balance, $to_account, $amount, $note, $days=14) {
+		$result = json_decode($this->call(ECC_API_BASE."/credit/offer", array(
+			"from_balance" => $from_balance,
+			"to_account" => $to_account,
+			"amount" => $amount,
+			"note" => $note,
+			"days" => $days
+		)));
+		return $result->balance;
+	}
+	
+	/**
+	 * Prepare a credit transfer
+	 * @param int $from_balance Balance credits should be deducted from
+	 * @param int $to_account Account credits are being transferred to
+	 * @param int $amount Amount of credits to transfer
+	 * @param string $note Short text note to include with transfer
+	 * @return string Prepare ID
+	 */
+	public function prepare($from_balance, $to_account, $amount, $note) {
+		$result = json_decode($this->call(ECC_API_BASE."/credit/prepare", array(
+			"from_balance" => $from_balance,
+			"to_account" => $to_account,
+			"amount" => $amount,
+			"note" => $note
+		)));
+		return $result->prepare_id;
+	}
+	
+	/**
+	 * Commit a credit transfer
+	 * @param int $to_balance Balance to commit credits to
+	 * @param string $prepare_id Prepare ID
+	 */
+	public function commit($to_balance, $prepare_id) {
+		$result = json_decode($this->call(ECC_API_BASE."/credit/commit", array(
+			"to_balance" => $to_balance,
+			"prepare_id" => $prepare_id
+		)));
+	}
+	
+	
+}
 ?>

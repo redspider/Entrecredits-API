@@ -14,6 +14,7 @@ session_start();
 
 /* Remove this line if you're talking to the public entrecredits.com site */
 define(ECC_OAUTH_URL_OVERRIDE, "https://entrecredits.com");
+define('ECC_API_BASE','http://localhost:5001/api');
 
 require_once('OAuth.php');
 require_once('EccOAuth.php');
@@ -88,17 +89,16 @@ if (!isset($_SESSION['access_token'])) {
 /* Get app api as well */
 $app_api = new OAuthClient(new EccServiceProvider(), $consumer);
 $app_token = $app_api->selfAuthorize($APP_ACCOUNT_ID);
-$app_api = new OAuthClient(new EccServiceProvider(), $consumer, $app_token);
+$app_api = new EccClient(new EccServiceProvider(), $consumer, $app_token);
 
 /* Construct api object*/
-$user_api = new OAuthClient(new EccServiceProvider(), $consumer, unserialize($_SESSION['access_token']));
+$user_api = new EccClient(new EccServiceProvider(), $consumer, unserialize($_SESSION['access_token']));
 
 /* Obtain the users balance */
-$account = json_decode($user_api->call($API_BASE."/account/summary", array()));
+$account = $user_api->summary();
 
 /* Obtain the applications balance */
-$app_account = json_decode($app_api->call($API_BASE."/account/summary", array()));
-
+$app_account = $app_api->summary();
 
 ?>
 Accessing <?=$account->account?> <?=$account->name?>, with a default balance of <?=$account->default_balance?>ec.
@@ -107,18 +107,18 @@ This app is owned by <?=$app_account->name?>, with a balance of <?=$app_account-
 <br />
 Now offering 50 credits to ourselves
 <?
-$new_balance = json_decode($app_api->call($API_BASE."/credit/offer", array("from_balance"=>1, "to_account"=>$account->account, "amount"=>50, "note"=>"Test test wheee", "days"=>14)));
+$new_balance = $app_api->offer(1, $account->account, 50, "Test test wheee", 14);
 ?>
-with resulting balance of <?=$new_balance->balance?>
+with resulting balance of <?=$new_balance?>
 <br />
 Now moving 5 credits from them to us
 <?
-$prepare = json_decode($app_api->call($API_BASE."/credit/prepare", array("from_balance"=>1, "to_account"=>$account->account, "amount"=>5, "note"=>"Test test wheee")));
+$prepare_id = $app_api->prepare(1, $app_account->account, 5, "Test test prepare");
 ?>
-prepare id is <?=$prepare->prepare_id?><br />
+prepare id is <?=$prepare_id?><br />
 committing<br />
 <?
-$app_api->call($API_BASE."/credit/commit", array("to_balance" => 1, "prepare_id"=>$prepare->prepare_id));
-$account = json_decode($user_api->call($API_BASE."/account/summary", array()));
+$app_api->commit(1, $prepare_id);
+$account = $user_api->summary();
 ?>
 Final balance is <?=$account->default_balance?>
