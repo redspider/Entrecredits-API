@@ -105,8 +105,20 @@ Accessing <?=$account->account?> <?=$account->name?>, with a default balance of 
 <br />
 This app is owned by <?=$app_account->name?>, with a balance of <?=$app_account->default_balance?>ec.
 <br />
-Now sending 50 credits to ourselves
+Now offering 50 credits to ourselves
 <?
-$new_balance = json_decode($app_api->call($API_BASE."/account/send_credits", array("from_balance"=>1, "to_account"=>$account->account, "amount"=>50, "note"=>"Test test wheee", "days"=>14)));
+$new_balance = json_decode($app_api->call($API_BASE."/credit/offer", array("from_balance"=>1, "to_account"=>$account->account, "amount"=>50, "note"=>"Test test wheee", "days"=>14)));
 ?>
 with resulting balance of <?=$new_balance->balance?>
+<br />
+Now moving 5 credits from them to us
+<?
+$prepare = json_decode($app_api->call($API_BASE."/credit/prepare", array("from_balance"=>1, "to_account"=>$account->account, "amount"=>5, "note"=>"Test test wheee")));
+?>
+prepare id is <?=$prepare->prepare_id?><br />
+committing<br />
+<?
+$app_api->call($API_BASE."/credit/commit", array("to_balance" => 1, "prepare_id"=>$prepare->prepare_id));
+$account = json_decode($user_api->call($API_BASE."/account/summary", array()));
+?>
+Final balance is <?=$account->default_balance?>
